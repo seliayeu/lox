@@ -1,10 +1,11 @@
 #include <any>
+#include <iostream>
 #include <string>
 #include <strstream>
 class Token {
 
 public:
-  enum class TokenType {
+  enum TokenType {
     // Single-character tokens.
     LEFT_PAREN,
     RIGHT_PAREN,
@@ -61,4 +62,19 @@ public:
 
   Token(TokenType type, std::string lexeme, std::any literal, int line)
       : type(type), lexeme(lexeme), literal(literal), line(line){};
+
+  std::string literalAsString() const {
+    if (literal.type() == typeid(int)) {
+      return std::to_string(std::any_cast<int>(literal));
+    } else if (literal.type() == typeid(float)) {
+      return std::to_string(std::any_cast<float>(literal));
+    } else if (literal.type() == typeid(std::string)) {
+      return std::any_cast<std::string>(literal);
+    }
+    return "?";
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const Token &t) {
+    return std::cout << t.type << " " << t.lexeme << " " << t.literalAsString();
+  }
 };
