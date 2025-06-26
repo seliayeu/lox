@@ -1,58 +1,10 @@
 #include <any>
 #include <iostream>
 #include <string>
-#include <strstream>
+#include "TokenType.hpp"
 
-enum TokenType {
-  // Single-character tokens.
-  LEFT_PAREN,
-  RIGHT_PAREN,
-  LEFT_BRACE,
-  RIGHT_BRACE,
-  COMMA,
-  DOT,
-  MINUS,
-  PLUS,
-  SEMICOLON,
-  SLASH,
-  STAR,
-
-  // One or two character tokens.
-  BANG,
-  BANG_EQUAL,
-  EQUAL,
-  EQUAL_EQUAL,
-  GREATER,
-  GREATER_EQUAL,
-  LESS,
-  LESS_EQUAL,
-
-  // Literals.
-  IDENTIFIER,
-  STRING,
-  NUMBER,
-
-  // Keywords.
-  AND,
-  CLASS,
-  ELSE,
-  FALSE,
-  FUN,
-  FOR,
-  IF,
-  NIL,
-  OR,
-  PRINT,
-  RETURN,
-  SUPER,
-  THIS,
-  TRUE,
-  VAR,
-  WHILE,
-
-  END_OF_LINE,
-};
-
+#ifndef TOKEN
+#define TOKEN
 class Token {
 
 public:
@@ -67,15 +19,16 @@ public:
   std::string literalAsString() const {
     if (literal.type() == typeid(int)) {
       return std::to_string(std::any_cast<int>(literal));
-    } else if (literal.type() == typeid(float)) {
-      return std::to_string(std::any_cast<float>(literal));
+    } else if (literal.type() == typeid(double)) {
+      return std::to_string(std::any_cast<double>(literal));
     } else if (literal.type() == typeid(std::string)) {
       return std::any_cast<std::string>(literal);
     }
-    return "?";
+    return lexeme;
   }
 
   friend std::ostream &operator<<(std::ostream &os, const Token &t) {
     return std::cout << t.type << " " << t.lexeme << " " << t.literalAsString();
   }
 };
+#endif

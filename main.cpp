@@ -6,35 +6,35 @@
 #include <string>
 #include <vector>
 
-#include "Scanner.h"
-#include "Token.h"
+#include "Scanner.hpp"
+#include "error.hpp"
+#include "Parser.hpp"
+#include "Interpreter.hpp"
+// #include "Token.h"
 
 bool hadError = false;
-
-void report(int line, std::string where, std::string message) {
-  std::cout << "[line " << line << "] Error" << where << ": " << message
-            << std::endl;
-  hadError = true;
-}
-
-void error(int line, std::string message) { report(line, "", message); }
+bool hadRuntimeError = false;
+Interpreter interpreter { };
 
 void run(std::string source) {
   Scanner scanner(source);
-  std::vector<Token> tokens;
+  std::vector<Token> tokens = scanner.scanTokens();
+  Parser parser { tokens };
+  std::vector<std::unique_ptr<Stmt>> statements = parser.parse();
 
-  for (Token t : tokens) {
-    std::cout << t << std::endl;
-  }
+  if (hadError)
+    return;
+  interpreter.interpret(statements);
 }
 
 void runPrompt() {
   std::string line;
   while (true) {
-    std::cout << "> " << std::endl;
-    std::cin >> line;
+    std::cout << "> ";
+    std::getline(std::cin, line);
     if (line.empty())
       break;
+    run(line);
     hadError = false;
   }
 }
@@ -45,15 +45,17 @@ void runFile(std::string path) {
   buff << f.rdbuf();
   run(buff.str());
   if (hadError)
-    exit(-1);
+    exit(65);
+  if (hadRuntimeError)
+    exit(70);
 }
 
 int main(int argc, char *argv[]) {
-  if (argc > 1) {
+  if (argc > 2) {
     std::cout << "Usage: lox [script]" << std::endl;
     return -1;
-  } else if (argc == 1) {
-    runFile(argv[0]);
+  } else if (argc == 2) {
+    runFile(argv[1]);
   } else {
     runPrompt();
   }
