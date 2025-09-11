@@ -18,42 +18,6 @@ struct Parser {
   std::unique_ptr<Expr> expression() {
     return assignment();
   }
-  // std::unique_ptr<Expr> comma() {
-  //   if (match(TokenType::COMMA)) {
-  //     expression(); // discard
-  //     error(peek(), "Expect finished expression.");
-  //     throw ParseError();
-  //   }
-  //   std::unique_ptr<Expr> expr = ternary();
-  //   if (match(TokenType::COMMA)) {
-  //     expr = expression();
-  //   }
-  //   return expr;
-  // }
-  // std::unique_ptr<Expr> ternary() {
-  //   if (match(TokenType::QUESTION)) {
-  //     equality(); // discard
-  //     if (!match(TokenType::COLON)) {
-  //       error(peek(), "Expect finished expression.");
-  //       throw ParseError();
-  //     }
-  //     equality(); // discard
-  //     error(peek(), "Expect finished expression.");
-  //     throw ParseError();
-  //   }
-  //   std::unique_ptr<Expr> expr1 = equality();
-  //   if (match(TokenType::QUESTION)) {
-  //     std::unique_ptr<Expr> expr2 = equality();
-  //     if (match(TokenType::COLON)) {
-  //       std::unique_ptr<Expr> expr3 = equality();
-  //       expr1 = std::make_unique<Ternary>(expr1, expr2, expr3);
-  //     } else {
-  //       error(peek(), "Expected :");
-  //       throw ParseError();
-  //     }
-  //   }
-  //   return expr1;
-  // }
   std::unique_ptr<Expr> assignment() {
     std::unique_ptr<Expr> expr = term();
     if (match(TokenType::EQUAL)) {
@@ -195,14 +159,14 @@ struct Parser {
     while (!isAtEnd()) {
       if (previous().type == TokenType::SEMICOLON) return;
       switch (peek().type) {
-        case CLASS:
-        case FUN:
-        case VAR:
-        case FOR:
-        case IF:
-        case WHILE:
-        case PRINT:
-        case RETURN:
+        case TokenType::CLASS:
+        case TokenType::FUN:
+        case TokenType::VAR:
+        case TokenType::FOR:
+        case TokenType::IF:
+        case TokenType::WHILE:
+        case TokenType::PRINT:
+        case TokenType::RETURN:
           return;
         default:
           break;
@@ -221,7 +185,7 @@ struct Parser {
       return printStatement();
     if (match(TokenType::LEFT_BRACE)) {
       std::vector<std::unique_ptr<Stmt>> stmt = block();
-      return std::make_unique<Block>(std::move(stmt));
+      return std::make_unique<Block>(stmt);
     }
     return expressionStatement();
   }
@@ -258,7 +222,7 @@ struct Parser {
     std::vector<std::unique_ptr<Stmt>> statements;
     while (!check(TokenType::RIGHT_BRACE) && !isAtEnd())
       statements.push_back(declaration());
-    consume(TokenType::RIGHT_BRACE, "Expect '{' after block");
+    consume(TokenType::RIGHT_BRACE, "Expect '}' after block");
     return statements;
   }
 };

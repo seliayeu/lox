@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include "Token.hpp"
 
+// TODO probably rename this or just use normal runtime_error?
 struct RuntimeError : public std::runtime_error {
   Token token;
   RuntimeError(Token token, std::string message) : std::runtime_error(message), token(token) {}

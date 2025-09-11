@@ -4,7 +4,6 @@ extern bool hadRuntimeError;
 #include "Token.hpp"
 #include "RuntimeError.hpp"
 
-
 void report(int line, std::string where, std::string message) {
   std::cout << "[line " << line << "] Error" << where << ": " << message
             << std::endl;

@@ -36,18 +36,18 @@ struct Interpreter : public ExprVisitor, public StmtVisitor {
     std::any right = evaluate(expr.right);
 
     switch (expr.op.type) {
-      case MINUS:
+      case TokenType::MINUS:
         checkNumberOperand(expr.op, left, right);
         return std::any_cast<double>(left) - std::any_cast<double>(right);
-      case SLASH:
+      case TokenType::SLASH:
         checkNumberOperand(expr.op, left, right);
         if (std::any_cast<double>(right) == 0)
           throw RuntimeError(expr.op, "Division by 0 not supported.");
         return std::any_cast<double>(left) / std::any_cast<double>(right);
-      case STAR:
+      case TokenType::STAR:
         checkNumberOperand(expr.op, left, right);
         return std::any_cast<double>(left) * std::any_cast<double>(right);
-      case PLUS:
+      case TokenType::PLUS:
         if ((left.type() == typeid(double)) && (right.type() == typeid(double)))
           return std::any_cast<double>(left) + std::any_cast<double>(right);
         if ((left.type() == typeid(std::string)) && (right.type() == typeid(std::string)))
@@ -58,21 +58,21 @@ struct Interpreter : public ExprVisitor, public StmtVisitor {
           return oss.str();
         }
         throw RuntimeError(expr.op, "Operands must two numbers or two strings.");
-      case GREATER:
+      case TokenType::GREATER:
         checkNumberOperand(expr.op, left, right);
         return std::any_cast<double>(left) > std::any_cast<double>(right);
-      case GREATER_EQUAL:
+      case TokenType::GREATER_EQUAL:
         checkNumberOperand(expr.op, left, right);
         return std::any_cast<double>(left) >= std::any_cast<double>(right);
-      case LESS:
+      case TokenType::LESS:
         checkNumberOperand(expr.op, left, right);
         return std::any_cast<double>(left) < std::any_cast<double>(right);
-      case LESS_EQUAL:
+      case TokenType::LESS_EQUAL:
         checkNumberOperand(expr.op, left, right);
         return std::any_cast<double>(left) <= std::any_cast<double>(right);
-      case BANG_EQUAL:
+      case TokenType::BANG_EQUAL:
         return !isEqual(left, right);
-      case EQUAL_EQUAL:
+      case TokenType::EQUAL_EQUAL:
         return isEqual(left, right);
       default: 
         break;
@@ -91,24 +91,28 @@ struct Interpreter : public ExprVisitor, public StmtVisitor {
     return value;
   }
 
-  void visitExpressionStmt(Expression &stmt) override {
+  std::any visitExpressionStmt(Expression &stmt) override {
     evaluate(stmt.expr);
+    return nullptr;
   }
 
-  void visitPrintStmt(Print &stmt) override {
+  std::any visitPrintStmt(Print &stmt) override {
     std::any val = evaluate(stmt.expr);
     std::cout << stringify(val) << std::endl;
+    return nullptr;
   }
 
-  void visitVarStmt(Var &stmt) override {
+  std::any visitVarStmt(Var &stmt) override {
     std::any val = (void*) nullptr;
     if (stmt.initializer != nullptr)
       val = evaluate(stmt.initializer);
     environment->define(stmt.name.lexeme, val);
+    return nullptr;
   }
 
-  void visitBlockStmt(Block &stmt) override {
+  std::any visitBlockStmt(Block &stmt) override {
     executeBlock(stmt.statements, std::make_shared<Environment>(environment));
+    return nullptr;
   }
 
   void interpret(std::vector<std::unique_ptr<Stmt>> &statements) {

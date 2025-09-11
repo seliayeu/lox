@@ -1,3 +1,4 @@
-*.out
-*.tmp
-*.pch
+.cache
+.direnv
+.envrc
+build

@@ -6,11 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "Scanner.hpp"
-#include "error.hpp"
-#include "Parser.hpp"
-#include "Interpreter.hpp"
-// #include "Token.h"
+#include "interpreter/Scanner.hpp"
+#include "interpreter/error.hpp"
+#include "interpreter/Parser.hpp"
+#include "interpreter/Interpreter.hpp"
 
 bool hadError = false;
 bool hadRuntimeError = false;

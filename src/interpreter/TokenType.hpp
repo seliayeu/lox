@@ -1,7 +1,5 @@
-#ifndef TOKENTYPE
-#define TOKENTYPE
-enum TokenType {
-  // Single-character tokens.
+#pragma once
+enum class TokenType {
   LEFT_PAREN,
   RIGHT_PAREN,
   LEFT_BRACE,
@@ -16,7 +14,6 @@ enum TokenType {
   COLON,
   QUESTION,
 
-  // One or two character tokens.
   BANG,
   BANG_EQUAL,
   EQUAL,
@@ -26,12 +23,10 @@ enum TokenType {
   LESS,
   LESS_EQUAL,
 
-  // Literals.
   IDENTIFIER,
   STRING,
   NUMBER,
 
-  // Keywords.
   AND,
   CLASS,
   ELSE,
@@ -51,4 +46,3 @@ enum TokenType {
 
   END_OF_LINE,
 };
-#endif
