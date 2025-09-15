@@ -15,14 +15,18 @@ public:
 
 class Block;
 class Var;
+class While;
 class Expression;
+class If;
 class Print;
 
 class StmtVisitor {
 public:
   virtual std::any visitBlockStmt(Block &stmt) = 0;
   virtual std::any visitVarStmt(Var &stmt) = 0;
+  virtual std::any visitWhileStmt(While &stmt) = 0;
   virtual std::any visitExpressionStmt(Expression &stmt) = 0;
+  virtual std::any visitIfStmt(If &stmt) = 0;
   virtual std::any visitPrintStmt(Print &stmt) = 0;
 };
 
@@ -47,6 +51,17 @@ public:
   }
 };
 
+class While : public Stmt {
+public:
+  std::unique_ptr<Expr> condition;
+  std::unique_ptr<Stmt> body;
+  While(std::unique_ptr<Expr> &condition, std::unique_ptr<Stmt> &body) : condition { std::move(condition) }, body { std::move(body) } {};
+
+  std::any accept(StmtVisitor &visitor) override {
+    return visitor.visitWhileStmt(*this);
+  }
+};
+
 class Expression : public Stmt {
 public:
   std::unique_ptr<Expr> expr;
@@ -54,6 +69,18 @@ public:
 
   std::any accept(StmtVisitor &visitor) override {
     return visitor.visitExpressionStmt(*this);
+  }
+};
+
+class If : public Stmt {
+public:
+  std::unique_ptr<Expr> condition;
+  std::unique_ptr<Stmt> thenBranch;
+  std::unique_ptr<Stmt> elseBranch;
+  If(std::unique_ptr<Expr> &condition, std::unique_ptr<Stmt> &thenBranch, std::unique_ptr<Stmt> &elseBranch) : condition { std::move(condition) }, thenBranch { std::move(thenBranch) }, elseBranch { std::move(elseBranch) } {};
+
+  std::any accept(StmtVisitor &visitor) override {
+    return visitor.visitIfStmt(*this);
   }
 };
 

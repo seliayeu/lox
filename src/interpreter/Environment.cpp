@@ -7,6 +7,7 @@
 #include "Environment.hpp"
 
 void Environment::define(std::string name, std::any value) {
+    std::cout << "cheeky define!" << name << std::endl;
   values[name] = value;
 }
 
@@ -19,9 +20,13 @@ std::any Environment::get(Token name) {
 }
 
 void Environment::assign(Token name, std::any value) {
-  if (values.find(name.lexeme) != values.end())
+  if (values.find(name.lexeme) != values.end()) {
     values[name.lexeme] = value;
-  if (enclosing != nullptr)
-    return enclosing->assign(name, value);
+    return;
+  }
+  if (enclosing != nullptr) {
+    enclosing->assign(name, value);
+    return;
+  }
   throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
 }

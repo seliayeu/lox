@@ -19,12 +19,12 @@ struct Parser {
     return assignment();
   }
   std::unique_ptr<Expr> assignment() {
-    std::unique_ptr<Expr> expr = term();
+    std::unique_ptr<Expr> expr = orExpr();
     if (match(TokenType::EQUAL)) {
       Token equals = previous();
       std::unique_ptr<Expr> value = assignment();
 
-      if (Variable* varPtr = dynamic_cast<Variable*>(value.get())) {
+      if (Variable* varPtr = dynamic_cast<Variable*>(expr.get())) {
         Token name = varPtr->name;
         return std::make_unique<Assign>(name, value);
       }
@@ -32,6 +32,28 @@ struct Parser {
     }
     return expr;
   }
+  std::unique_ptr<Expr> orExpr() {
+    std::unique_ptr<Expr> expr = andExpr();
+
+    while (match(TokenType::OR)) {
+      Token op = previous();
+      std::unique_ptr<Expr> right = andExpr();
+      expr = std::make_unique<Logical>(expr, op, right);
+    }
+    return expr;
+  }
+
+  std::unique_ptr<Expr> andExpr() {
+    std::unique_ptr<Expr> expr = equality();
+
+    while (match(TokenType::OR)) {
+      Token op = previous();
+      std::unique_ptr<Expr> right = equality();
+      expr = std::make_unique<Logical>(expr, op, right);
+    }
+    return expr;
+  }
+
   std::unique_ptr<Expr> equality() {
     if (match(TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL)) {
       comparison(); // discard
@@ -108,8 +130,9 @@ struct Parser {
       return std::make_unique<Literal>((void*) nullptr);
     if (match(TokenType::NUMBER, TokenType::STRING))
       return std::make_unique<Literal>(previous().literal);
-    if (match(TokenType::IDENTIFIER))
+    if (match(TokenType::IDENTIFIER)) {
       return std::make_unique<Variable>(previous());
+    }
     if (match(TokenType::LEFT_PAREN)) {
       std::unique_ptr<Expr> expr = expression();
       consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
@@ -181,8 +204,14 @@ struct Parser {
     return statements;
   }
   std::unique_ptr<Stmt> statement() {
+    if (match(TokenType::IF)) 
+      return ifStatement();
     if (match(TokenType::PRINT)) 
       return printStatement();
+    if (match(TokenType::WHILE))
+      return whileStatement();
+    if (match(TokenType::FOR))
+      return forStatement();
     if (match(TokenType::LEFT_BRACE)) {
       std::vector<std::unique_ptr<Stmt>> stmt = block();
       return std::make_unique<Block>(stmt);
@@ -193,6 +222,65 @@ struct Parser {
     std::unique_ptr<Expr> value = expression();
     consume(TokenType::SEMICOLON, "Expect ';' after value.");
     return std::make_unique<Print>(value);
+  }
+  std::unique_ptr<Stmt> whileStatement() {
+    consume(TokenType::LEFT_PAREN, "Expect '(' after if.");
+    std::unique_ptr<Expr> condition = expression();
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after condition.");
+    std::unique_ptr<Stmt> body { statement() };
+    return std::make_unique<While>(condition, body);
+  }
+  std::unique_ptr<Stmt> forStatement() {
+    consume(TokenType::LEFT_PAREN, "Expect '(' after if.");
+    std::unique_ptr<Stmt> initializer;
+    if (match(TokenType::SEMICOLON))
+      initializer = nullptr;
+    else if (match(TokenType::VAR))
+      initializer = varDeclaration();
+    else
+      initializer = expressionStatement();
+
+    std::unique_ptr<Expr> condition = nullptr;
+    if (!check(TokenType::SEMICOLON))
+      condition = expression();
+    consume(TokenType::SEMICOLON, "Expect ';' after loop condition.");
+
+    std::unique_ptr<Expr> increment = nullptr;
+    if (!check(TokenType::SEMICOLON))
+      increment = expression();
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after loop condition.");
+
+    std::unique_ptr<Stmt> body = statement();
+    if (increment != nullptr) {
+      std::vector<std::unique_ptr<Stmt>> blockStatements;
+      blockStatements.push_back(std::move(body));
+      blockStatements.push_back(std::make_unique<Expression>(increment));
+      body = std::make_unique<Block>(blockStatements);
+    }
+
+    if (condition == nullptr)
+      condition = std::make_unique<Literal>(true);
+    
+    body = std::make_unique<While>(condition, body);
+
+    if (initializer != nullptr) {
+      std::vector<std::unique_ptr<Stmt>> blockStatements;
+      blockStatements.push_back(std::move(initializer));
+      blockStatements.push_back(std::move(body));
+      body = std::make_unique<Block>(blockStatements);
+    }
+
+    return body;
+  }
+  std::unique_ptr<Stmt> ifStatement() {
+    consume(TokenType::LEFT_PAREN, "Expect '(' after if.");
+    std::unique_ptr<Expr> condition = expression();
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after condition.");
+    std::unique_ptr<Stmt> thenBranch { statement() };
+    std::unique_ptr<Stmt> elseBranch { nullptr };
+    if (match(TokenType::ELSE))
+        elseBranch = statement();
+    return std::make_unique<If>(condition, thenBranch, elseBranch);
   }
   std::unique_ptr<Stmt> expressionStatement() {
     std::unique_ptr<Expr> value = expression();

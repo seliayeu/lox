@@ -14,6 +14,8 @@ struct Assign;
 struct Grouping;
 struct Binary;
 struct Literal;
+struct Logical;
+struct Logic;
 struct Unary;
 struct Variable;
 
@@ -22,6 +24,7 @@ struct ExprVisitor {
   virtual std::any visitGroupingExpr(Grouping &expr) = 0;
   virtual std::any visitBinaryExpr(Binary &expr) = 0;
   virtual std::any visitLiteralExpr(Literal &expr) = 0;
+  virtual std::any visitLogicalExpr(Logical &expr) = 0;
   virtual std::any visitUnaryExpr(Unary &expr) = 0;
   virtual std::any visitVariableExpr(Variable &expr) = 0;
 };
@@ -64,6 +67,18 @@ struct Literal : public Expr {
     return visitor.visitLiteralExpr(*this);
   }
 };
+
+struct Logical : public Expr {
+  std::unique_ptr<Expr> right;
+  std::unique_ptr<Expr> left;
+  Token op;
+  Logical(std::unique_ptr<Expr> &left, Token op, std::unique_ptr<Expr> &right) : right { std::move(right)}, op { op }, left { std::move(left) } {};
+
+  std::any accept(ExprVisitor &visitor) override {
+    return visitor.visitLogicalExpr(*this);
+  }
+};
+
 
 struct Unary : public Expr {
   Token op;

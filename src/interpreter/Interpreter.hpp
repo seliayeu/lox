@@ -57,7 +57,7 @@ struct Interpreter : public ExprVisitor, public StmtVisitor {
           oss << std::any_cast<std::string>(left) << std::any_cast<double>(right);
           return oss.str();
         }
-        throw RuntimeError(expr.op, "Operands must two numbers or two strings.");
+        throw RuntimeError(expr.op, "Operands must be two numbers or two strings.");
       case TokenType::GREATER:
         checkNumberOperand(expr.op, left, right);
         return std::any_cast<double>(left) > std::any_cast<double>(right);
@@ -96,10 +96,36 @@ struct Interpreter : public ExprVisitor, public StmtVisitor {
     return nullptr;
   }
 
+  std::any visitIfStmt(If &stmt) override {
+    if (isTruthy(evaluate(stmt.condition)))
+      execute(stmt.thenBranch);
+    else if (stmt.elseBranch != nullptr)
+      execute(stmt.elseBranch);
+    return nullptr;
+  }
+
+  std::any visitWhileStmt(While &stmt) override {
+    while (isTruthy(evaluate(stmt.condition)))
+      execute(stmt.body);
+    return nullptr;
+  }
+
   std::any visitPrintStmt(Print &stmt) override {
     std::any val = evaluate(stmt.expr);
     std::cout << stringify(val) << std::endl;
     return nullptr;
+  }
+
+  std::any visitLogicalExpr(Logical &expr) override {
+    std::any left = evaluate(expr.left);
+    if (expr.op.type == TokenType::OR) {
+      if (isTruthy(left))
+        return left;
+    } else {
+      if (!isTruthy(left))
+        return left;
+    }
+    return evaluate(expr.right);
   }
 
   std::any visitVarStmt(Var &stmt) override {
