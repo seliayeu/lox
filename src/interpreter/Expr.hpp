@@ -1,6 +1,7 @@
 #pragma once
 
 #include <any>
+#include <vector>
 #include "Token.hpp"
 
 struct ExprVisitor;
@@ -13,6 +14,7 @@ struct Expr {
 struct Assign;
 struct Grouping;
 struct Binary;
+struct Call;
 struct Literal;
 struct Logical;
 struct Logic;
@@ -23,6 +25,7 @@ struct ExprVisitor {
   virtual std::any visitAssignExpr(Assign &expr) = 0;
   virtual std::any visitGroupingExpr(Grouping &expr) = 0;
   virtual std::any visitBinaryExpr(Binary &expr) = 0;
+  virtual std::any visitCallExpr(Call &expr) = 0;
   virtual std::any visitLiteralExpr(Literal &expr) = 0;
   virtual std::any visitLogicalExpr(Logical &expr) = 0;
   virtual std::any visitUnaryExpr(Unary &expr) = 0;
@@ -31,8 +34,8 @@ struct ExprVisitor {
 
 struct Assign : public Expr {
   Token name;
-  std::unique_ptr<Expr> value;
-  Assign(Token &name, std::unique_ptr<Expr> &value) : name { name }, value { std::move(value) } {};
+  std::shared_ptr<Expr> value;
+  Assign(Token &name, std::shared_ptr<Expr> &value) : name { name }, value { std::move(value) } {};
 
   std::any accept(ExprVisitor &visitor) override {
     return visitor.visitAssignExpr(*this);
@@ -40,8 +43,8 @@ struct Assign : public Expr {
 };
 
 struct Grouping : public Expr {
-  std::unique_ptr<Expr> expr;
-  Grouping(std::unique_ptr<Expr> &expr) : expr { std::move(expr) } {};
+  std::shared_ptr<Expr> expr;
+  Grouping(std::shared_ptr<Expr> &expr) : expr { std::move(expr) } {};
 
   std::any accept(ExprVisitor &visitor) override {
     return visitor.visitGroupingExpr(*this);
@@ -49,13 +52,24 @@ struct Grouping : public Expr {
 };
 
 struct Binary : public Expr {
-  std::unique_ptr<Expr> left;
+  std::shared_ptr<Expr> left;
   Token op;
-  std::unique_ptr<Expr> right;
-  Binary(std::unique_ptr<Expr> &left, Token &op, std::unique_ptr<Expr> &right) : left { std::move(left) }, op { op }, right { std::move(right) } {};
+  std::shared_ptr<Expr> right;
+  Binary(std::shared_ptr<Expr> &left, Token &op, std::shared_ptr<Expr> &right) : left { std::move(left) }, op { op }, right { std::move(right) } {};
 
   std::any accept(ExprVisitor &visitor) override {
     return visitor.visitBinaryExpr(*this);
+  }
+};
+
+struct Call : public Expr {
+  std::shared_ptr<Expr> callee;
+  Token paren;
+  std::vector<std::shared_ptr<Expr>> arguments;
+  Call(std::shared_ptr<Expr> &callee, Token &paren, std::vector<std::shared_ptr<Expr>> &arguments) : callee { std::move(callee) }, paren { paren }, arguments { std::move(arguments) } {};
+
+  std::any accept(ExprVisitor &visitor) override {
+    return visitor.visitCallExpr(*this);
   }
 };
 
@@ -69,10 +83,10 @@ struct Literal : public Expr {
 };
 
 struct Logical : public Expr {
-  std::unique_ptr<Expr> right;
-  std::unique_ptr<Expr> left;
+  std::shared_ptr<Expr> right;
+  std::shared_ptr<Expr> left;
   Token op;
-  Logical(std::unique_ptr<Expr> &left, Token op, std::unique_ptr<Expr> &right) : right { std::move(right)}, op { op }, left { std::move(left) } {};
+  Logical(std::shared_ptr<Expr> &left, Token op, std::shared_ptr<Expr> &right) : right { std::move(right)}, op { op }, left { std::move(left) } {};
 
   std::any accept(ExprVisitor &visitor) override {
     return visitor.visitLogicalExpr(*this);
@@ -82,8 +96,8 @@ struct Logical : public Expr {
 
 struct Unary : public Expr {
   Token op;
-  std::unique_ptr<Expr> right;
-  Unary(Token &op, std::unique_ptr<Expr> &right) : op { op }, right { std::move(right) } {};
+  std::shared_ptr<Expr> right;
+  Unary(Token &op, std::shared_ptr<Expr> &right) : op { op }, right { std::move(right) } {};
 
   std::any accept(ExprVisitor &visitor) override {
     return visitor.visitUnaryExpr(*this);

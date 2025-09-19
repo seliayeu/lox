@@ -7,6 +7,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(lox src/main.cpp 
     src/interpreter/Environment.cpp
+    src/interpreter/Interpreter.cpp
+    src/interpreter/LoxFunction.cpp
     src/interpreter/error.cpp
     src/interpreter/Scanner.cpp
     src/interpreter/Token.cpp)

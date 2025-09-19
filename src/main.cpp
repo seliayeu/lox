@@ -19,7 +19,7 @@ void run(std::string source) {
   Scanner scanner(source);
   std::vector<Token> tokens = scanner.scanTokens();
   Parser parser { tokens };
-  std::vector<std::unique_ptr<Stmt>> statements = parser.parse();
+  std::vector<std::shared_ptr<Stmt>> statements = parser.parse();
 
   if (hadError)
     return;

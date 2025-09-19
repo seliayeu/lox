@@ -17,8 +17,10 @@ class Block;
 class Var;
 class While;
 class Expression;
+class Function;
 class If;
 class Print;
+class Return;
 
 class StmtVisitor {
 public:
@@ -26,14 +28,16 @@ public:
   virtual std::any visitVarStmt(Var &stmt) = 0;
   virtual std::any visitWhileStmt(While &stmt) = 0;
   virtual std::any visitExpressionStmt(Expression &stmt) = 0;
+  virtual std::any visitFunctionStmt(Function &stmt) = 0;
   virtual std::any visitIfStmt(If &stmt) = 0;
   virtual std::any visitPrintStmt(Print &stmt) = 0;
+  virtual std::any visitReturnStmt(Return &stmt) = 0;
 };
 
 class Block : public Stmt {
 public:
-  std::vector<std::unique_ptr<Stmt>> statements;
-  Block(std::vector<std::unique_ptr<Stmt>> &statements) : statements{ std::move(statements) } {};
+  std::vector<std::shared_ptr<Stmt>> statements;
+  Block(std::vector<std::shared_ptr<Stmt>> &statements) : statements{ std::move(statements) } {};
 
   std::any accept(StmtVisitor &visitor) override {
     return visitor.visitBlockStmt(*this);
@@ -43,8 +47,8 @@ public:
 class Var : public Stmt {
 public:
   Token name;
-  std::unique_ptr<Expr> initializer;
-  Var(Token &name, std::unique_ptr<Expr> &initializer) : name { name }, initializer { std::move(initializer) } {};
+  std::shared_ptr<Expr> initializer;
+  Var(Token &name, std::shared_ptr<Expr> &initializer) : name { name }, initializer { std::move(initializer) } {};
 
   std::any accept(StmtVisitor &visitor) override {
     return visitor.visitVarStmt(*this);
@@ -53,9 +57,9 @@ public:
 
 class While : public Stmt {
 public:
-  std::unique_ptr<Expr> condition;
-  std::unique_ptr<Stmt> body;
-  While(std::unique_ptr<Expr> &condition, std::unique_ptr<Stmt> &body) : condition { std::move(condition) }, body { std::move(body) } {};
+  std::shared_ptr<Expr> condition;
+  std::shared_ptr<Stmt> body;
+  While(std::shared_ptr<Expr> &condition, std::shared_ptr<Stmt> &body) : condition { std::move(condition) }, body { std::move(body) } {};
 
   std::any accept(StmtVisitor &visitor) override {
     return visitor.visitWhileStmt(*this);
@@ -64,20 +68,32 @@ public:
 
 class Expression : public Stmt {
 public:
-  std::unique_ptr<Expr> expr;
-  Expression(std::unique_ptr<Expr> &expr) : expr { std::move(expr) } {};
+  std::shared_ptr<Expr> expr;
+  Expression(std::shared_ptr<Expr> &expr) : expr { std::move(expr) } {};
 
   std::any accept(StmtVisitor &visitor) override {
     return visitor.visitExpressionStmt(*this);
   }
 };
 
+class Function : public Stmt {
+public:
+  Token name;
+  std::vector<Token> params;
+  std::vector<std::shared_ptr<Stmt>> body;
+  Function(Token name, std::vector<Token> &params, std::vector<std::shared_ptr<Stmt>> &body) : name { name }, params { params }, body { std::move(body) } {};
+
+  std::any accept(StmtVisitor &visitor) override {
+    return visitor.visitFunctionStmt(*this);
+  }
+};
+
 class If : public Stmt {
 public:
-  std::unique_ptr<Expr> condition;
-  std::unique_ptr<Stmt> thenBranch;
-  std::unique_ptr<Stmt> elseBranch;
-  If(std::unique_ptr<Expr> &condition, std::unique_ptr<Stmt> &thenBranch, std::unique_ptr<Stmt> &elseBranch) : condition { std::move(condition) }, thenBranch { std::move(thenBranch) }, elseBranch { std::move(elseBranch) } {};
+  std::shared_ptr<Expr> condition;
+  std::shared_ptr<Stmt> thenBranch;
+  std::shared_ptr<Stmt> elseBranch;
+  If(std::shared_ptr<Expr> &condition, std::shared_ptr<Stmt> &thenBranch, std::shared_ptr<Stmt> &elseBranch) : condition { condition }, thenBranch { thenBranch }, elseBranch { elseBranch} {};
 
   std::any accept(StmtVisitor &visitor) override {
     return visitor.visitIfStmt(*this);
@@ -86,10 +102,21 @@ public:
 
 class Print : public Stmt {
 public:
-  std::unique_ptr<Expr> expr;
-  Print(std::unique_ptr<Expr> &expr) : expr { std::move(expr) } {};
+  std::shared_ptr<Expr> expr;
+  Print(std::shared_ptr<Expr> &expr) : expr { std::move(expr) } {};
 
   std::any accept(StmtVisitor &visitor) override {
     return visitor.visitPrintStmt(*this);
+  }
+};
+
+class Return : public Stmt {
+public:
+  Token keyword;
+  std::shared_ptr<Expr> value;
+  Return(Token keyword, std::shared_ptr<Expr> &value) : keyword{ keyword }, value{ value } {};
+
+  std::any accept(StmtVisitor &visitor) override {
+    return visitor.visitReturnStmt(*this);
   }
 };

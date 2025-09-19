@@ -7,7 +7,6 @@
 #include "Environment.hpp"
 
 void Environment::define(std::string name, std::any value) {
-    std::cout << "cheeky define!" << name << std::endl;
   values[name] = value;
 }
 
@@ -16,6 +15,7 @@ std::any Environment::get(Token name) {
     return values.at(name.lexeme);
   if (enclosing != nullptr)
     return enclosing->get(name);
+
   throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
 }
 
