@@ -8,9 +8,9 @@
 class Scanner {
   const std::string source;
   std::vector<Token> tokens;
-  int start { 0 };
-  int current { 0 };
-  int line { 1 };
+  size_t start { 0 };
+  size_t current { 0 };
+  size_t line { 1 };
   std::unordered_map<std::string, TokenType> keywords = {
     {"and", TokenType::AND},
     {"class", TokenType::CLASS},
@@ -48,5 +48,5 @@ class Scanner {
 public:
   Scanner(std::string source) : source(source) {}
   std::vector<Token> scanTokens();
-  int getLine();
+  size_t getLine();
 };

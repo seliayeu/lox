@@ -5,6 +5,9 @@
 
 class LoxCallable {
 public:
-  virtual int arity() = 0;
+  virtual size_t arity() = 0;
   virtual std::any call(Interpreter &interpreter, std::vector<std::any> arguments) = 0;
+  virtual ~LoxCallable() = 0;
 };
+
+inline LoxCallable::~LoxCallable() = default;

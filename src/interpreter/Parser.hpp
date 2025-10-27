@@ -9,7 +9,7 @@
 
 struct Parser {
   std::vector<Token> tokens;
-  int current { 0 };
+  size_t current { 0 };
 
   struct ParseError : std::runtime_error {
     ParseError() : std::runtime_error("") {}

@@ -32,7 +32,10 @@ public:
   virtual std::any visitIfStmt(If &stmt) = 0;
   virtual std::any visitPrintStmt(Print &stmt) = 0;
   virtual std::any visitReturnStmt(Return &stmt) = 0;
+  virtual ~StmtVisitor() = 0;
 };
+
+inline StmtVisitor::~StmtVisitor() = default;
 
 class Block : public Stmt {
 public:

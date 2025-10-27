@@ -1,5 +1,3 @@
-#pragma once
-
 #include <any>
 #include <string>
 #include "Token.hpp"

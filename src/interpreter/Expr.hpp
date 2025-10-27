@@ -1,6 +1,7 @@
 #pragma once
 
 #include <any>
+#include <memory>
 #include <vector>
 #include "Token.hpp"
 
@@ -30,7 +31,10 @@ struct ExprVisitor {
   virtual std::any visitLogicalExpr(Logical &expr) = 0;
   virtual std::any visitUnaryExpr(Unary &expr) = 0;
   virtual std::any visitVariableExpr(Variable &expr) = 0;
+  virtual ~ExprVisitor() = 0;
 };
+
+inline ExprVisitor::~ExprVisitor() = default;
 
 struct Assign : public Expr {
   Token name;
@@ -86,7 +90,7 @@ struct Logical : public Expr {
   std::shared_ptr<Expr> right;
   std::shared_ptr<Expr> left;
   Token op;
-  Logical(std::shared_ptr<Expr> &left, Token op, std::shared_ptr<Expr> &right) : right { std::move(right)}, op { op }, left { std::move(left) } {};
+  Logical(std::shared_ptr<Expr> &left, Token op, std::shared_ptr<Expr> &right) : right { std::move(right)}, left { std::move(left) }, op { op } {};
 
   std::any accept(ExprVisitor &visitor) override {
     return visitor.visitLogicalExpr(*this);

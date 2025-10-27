@@ -191,4 +191,4 @@ std::vector<Token> Scanner::scanTokens() {
   return tokens;
 }
 
-int Scanner::getLine() { return line; }
+size_t Scanner::getLine() { return line; }

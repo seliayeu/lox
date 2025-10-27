@@ -7,7 +7,7 @@
 std::any LoxFunction::call(Interpreter &interpreter, std::vector<std::any> arguments) {
   std::shared_ptr<Environment> environment{ new Environment(closure) };
   
-  for (int i = 0; i < declaration.get()->params.size(); ++i) {
+  for (size_t i = 0; i < declaration.get()->params.size(); ++i) {
     environment->define(declaration.get()->params[i].lexeme, arguments[i]);
   }
 
@@ -20,7 +20,7 @@ std::any LoxFunction::call(Interpreter &interpreter, std::vector<std::any> argum
   return nullptr;
 }
 
-int LoxFunction::arity() {
+size_t LoxFunction::arity() {
   return declaration.get()->params.size();
 }
 

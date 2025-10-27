@@ -7,8 +7,8 @@
 extern bool hadError;
 extern bool hadRuntimeError;
 
-void report(int line, std::string where, std::string message);
-void error(int line, std::string message);
+void report(size_t line, std::string where, std::string message);
+void error(size_t line, std::string message);
 void error(Token token, std::string message);
 void runtimeError(RuntimeError error);
 
