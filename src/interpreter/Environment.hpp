@@ -5,7 +5,8 @@
 #include <memory>
 #include "Token.hpp"
 
-class Environment {
+class Environment : public std::enable_shared_from_this<Environment> {
+private:
   std::unordered_map<std::string, std::any> values;
 public:
   std::shared_ptr<Environment> enclosing;
@@ -15,5 +16,7 @@ public:
 
   void define(std::string name, std::any value);
   std::any get(Token name);
+  std::any getAt(size_t distance, std::string name);
   void assign(Token name, std::any value);
+  std::shared_ptr<Environment> ancestor(size_t distance);
 };

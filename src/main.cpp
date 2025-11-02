@@ -10,10 +10,11 @@
 #include "interpreter/error.hpp"
 #include "interpreter/Parser.hpp"
 #include "interpreter/Interpreter.hpp"
+#include "interpreter/Resolver.hpp"
 
 bool hadError = false;
 bool hadRuntimeError = false;
-Interpreter interpreter { };
+std::shared_ptr<Interpreter> interpreter { };
 
 void run(std::string source) {
   Scanner scanner(source);
@@ -23,7 +24,10 @@ void run(std::string source) {
 
   if (hadError)
     return;
-  interpreter.interpret(statements);
+  Resolver resolver{ interpreter };
+  if (hadError)
+    return;
+  interpreter->interpret(statements);
 }
 
 void runPrompt() {

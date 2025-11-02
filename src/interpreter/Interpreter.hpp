@@ -4,6 +4,7 @@
 #include "Environment.hpp"
 #include <any>
 #include <vector>
+#include <unordered_map>
 #include <memory>
 
 class Interpreter : public ExprVisitor, public StmtVisitor {
@@ -11,6 +12,8 @@ public:
   std::shared_ptr<Environment> globals { std::make_shared<Environment>() };
 private:
   std::shared_ptr<Environment> environment { globals };
+  std::unordered_map<Expr*, size_t> locals;
+  std::any lookUpVariable(Token name, Expr& expr);
 public:
   Interpreter() {
     // globals.define("clock", ClockBuiltIn
@@ -35,6 +38,7 @@ public:
 
   void interpret(std::vector<std::shared_ptr<Stmt>> &statements);
   void executeBlock(std::vector<std::shared_ptr<Stmt>> &statements, std::shared_ptr<Environment> environment);
+  void resolve(Expr& expr, size_t depth);
 
   std::any evaluate(std::shared_ptr<Expr> &expr);
   bool isTruthy(std::any value);

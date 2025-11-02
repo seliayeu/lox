@@ -103,7 +103,7 @@ std::any Interpreter::visitCallExpr(Call &expr) {
 }
 
 std::any Interpreter::visitVariableExpr(Variable &expr) {
-  return environment->get(expr.name);
+  return lookUpVariable(expr.name, expr);
 }
 
 std::any Interpreter::visitAssignExpr(Assign &expr) {
@@ -268,3 +268,13 @@ void Interpreter::execute(std::shared_ptr<Stmt> &stmt) {
   stmt->accept(*this);
 }
 
+void Interpreter::resolve(Expr& expr, size_t depth) {
+  locals[&expr] = depth;
+}
+
+std::any Interpreter::lookUpVariable(Token name, Expr& expr) {
+  if (locals.find(&expr) == locals.end())
+    return globals->get(name);
+  size_t dist{ locals.at(&expr) };
+  return environment->getAt(dist, name.lexeme);
+}
