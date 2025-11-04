@@ -14,7 +14,7 @@
 
 bool hadError = false;
 bool hadRuntimeError = false;
-std::shared_ptr<Interpreter> interpreter { };
+std::shared_ptr<Interpreter> interpreter { std::make_shared<Interpreter>() };
 
 void run(std::string source) {
   Scanner scanner(source);
@@ -25,6 +25,7 @@ void run(std::string source) {
   if (hadError)
     return;
   Resolver resolver{ interpreter };
+  resolver.resolve(statements);
   if (hadError)
     return;
   interpreter->interpret(statements);

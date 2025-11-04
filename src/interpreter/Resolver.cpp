@@ -47,7 +47,8 @@ std::any Resolver::visitBinaryExpr(Binary& expr) {
 }
 
 std::any Resolver::visitVariableExpr(Variable& expr) {
-  if (!scopes.empty() && scopes.back()[expr.name.lexeme] == false)
+  if (!scopes.empty() && scopes.back().find(expr.name.lexeme) != scopes.back().end()
+    && scopes.back()[expr.name.lexeme] == false)
     error(expr.name, "Can't read local variable in its own initializer.");
   resolveLocal(expr, expr.name);
 

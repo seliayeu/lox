@@ -34,6 +34,7 @@ std::shared_ptr<Environment> Environment::ancestor(size_t distance) {
   auto env{ shared_from_this() };
   for (size_t i = 0; i < distance; ++i)
     env = env->enclosing;
+
   return env;
 }
 
